@@ -1,0 +1,7 @@
+# Append to $FB/plugins.conf so Firebird can load the plugin named in the
+# database header (hdr_crypt_plugin = "DBCRYPT"). No KeyHolderPlugin is needed:
+# the plugin reads the MailStore .key sitting next to the database and Firebird
+# uses its "holderless" path.
+Plugin = DBCRYPT {
+	Module = $(dir_plugins)/DBCRYPT
+}
