@@ -13,6 +13,9 @@ This came out of inspecting Paul's two local archives:
 
 ## What works
 
+**Full write-up: [FINDINGS.md](FINDINGS.md)** — the complete reverse-engineering, crypto scheme, and results.
+
+
 The archive's `.fdb` databases are Firebird 4 databases encrypted at the page
 level by MailStore's `DBCrypt` plugin. A stock Firebird client cannot open them,
 and there is no documented on-disk format. But the archive is self-contained:
