@@ -1,0 +1,26 @@
+[run.bat] starting 
+[run.bat] staging folder C:\Users\pcr20\OneDrive\Apps\_fbwork 
+[run.bat] extracting pylib.zip 
+        1 file(s) copied.
+        1 file(s) copied.
+[run.bat] using python: py -3 
+=== MailStore Firebird schema dump ===
+db       : C:\Users\pcr20\AppData\Local\Temp\msfb\MailStoreMaster.fdb
+fbclient : C:\Users\pcr20\OneDrive\Apps\MailstoreLup\Application\Firebird4_x86\fbclient.dll
+fbroot   : C:\Users\pcr20\OneDrive\Apps\MailstoreLup\Application\Firebird4_x86
+python   : 3.15.1 (32-bit)
+fail       user='SYSDBA' pw='masterkey' ndt=True -> Missing database encryption key for your attachment -Plugin DBCRYPT: -Error in DbCrypt plugin: UnprotectData failed with an error: 2148073483  -Key not valid for use in specified state. 
+fail       user='SYSDBA' pw='masterkey' ndt=False -> Missing database encryption key for your attachment -Plugin DBCRYPT: -Error in DbCrypt plugin: UnprotectData failed with an error: 2148073483  -Key not valid for use in specified state. 
+fail       user='SYSDBA' pw='' ndt=True -> Missing database encryption key for your attachment -Plugin DBCRYPT: -Error in DbCrypt plugin: UnprotectData failed with an error: 2148073483  -Key not valid for use in specified state. 
+fail       user='SYSDBA' pw='' ndt=False -> Missing database encryption key for your attachment -Plugin DBCRYPT: -Error in DbCrypt plugin: UnprotectData failed with an error: 2148073483  -Key not valid for use in specified state. 
+fail       user='SYSDBA' pw=None ndt=True -> Missing database encryption key for your attachment -Plugin DBCRYPT: -Error in DbCrypt plugin: UnprotectData failed with an error: 2148073483  -Key not valid for use in specified state. 
+fail       user='SYSDBA' pw=None ndt=False -> Missing database encryption key for your attachment -Plugin DBCRYPT: -Error in DbCrypt plugin: UnprotectData failed with an error: 2148073483  -Key not valid for use in specified state. 
+fail       user=None pw=None ndt=True -> Missing database encryption key for your attachment -Plugin DBCRYPT: -Error in DbCrypt plugin: UnprotectData failed with an error: 2148073483  -Key not valid for use in specified state. 
+fail       user=None pw=None ndt=False -> Missing database encryption key for your attachment -Plugin DBCRYPT: -Error in DbCrypt plugin: UnprotectData failed with an error: 2148073483  -Key not valid for use in specified state. 
+fail       user='' pw='' ndt=True -> Missing database encryption key for your attachment -Plugin DBCRYPT: -Error in DbCrypt plugin: UnprotectData failed with an error: 2148073483  -Key not valid for use in specified state. 
+fail       user='' pw='' ndt=False -> Missing database encryption key for your attachment -Plugin DBCRYPT: -Error in DbCrypt plugin: UnprotectData failed with an error: 2148073483  -Key not valid for use in specified state. 
+fail       user='SYSDBA' pw='Firebird' ndt=True -> Missing database encryption key for your attachment -Plugin DBCRYPT: -Error in DbCrypt plugin: UnprotectData failed with an error: 2148073483  -Key not valid for use in specified state. 
+fail       user='SYSDBA' pw='Firebird' ndt=False -> Missing database encryption key for your attachment -Plugin DBCRYPT: -Error in DbCrypt plugin: UnprotectData failed with an error: 2148073483  -Key not valid for use in specified state. 
+
+*** Could not attach. Last errors above. ***
+[run.bat] finished exit=2 

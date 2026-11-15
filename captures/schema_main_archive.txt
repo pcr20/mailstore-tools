@@ -1,0 +1,247 @@
+[run2] starting 
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+[run2] python: py -3 
+=== MailStore Firebird schema dump ===
+fbclient : C:\Users\pcr20\OneDrive\Apps\Mailstore\Application\Firebird4_x86\fbclient.dll
+python   : 3.15.1 (32-bit)
+
+======================================================================
+DATABASE: C:\Users\pcr20\AppData\Local\Temp\msfb2\MailStoreMaster.fdb
+  CONNECTED user='SYSDBA' pw='masterkey'
+  engine: 4.0.6
+
+  USER TABLES/VIEWS (15):
+    CREDENTIAL                                 table
+    FILEGROUP                                  table
+    FOLDER                                     table
+    GLOBALBINARY                               table
+    GLOBALPROPERTY                             table
+    JOB                                        table
+    JOBRESULT                                  table
+    KNOWNKEYS                                  table
+    PROFILE                                    table
+    TAG                                        table
+    USER                                       table
+    USERDATA                                   table
+    USERFOLDER                                 table
+    USERMAPPING                                table
+    WORKERRESULT                               table
+
+  COLUMNS:
+
+    [CREDENTIAL]
+       0 CREDENTIALID                   BIGINT/NUMERIC   NOT NULL
+       1 CREDENTIALTYPE                 INTEGER          NOT NULL
+       2 DESCRIPTION                    VARCHAR(255)     
+       3 SETTINGS                       BLOB(sub 1)      NOT NULL
+
+    [FILEGROUP]
+       0 FILEGROUPID                    INTEGER          NOT NULL
+       1 NAME                           VARCHAR(255)     NOT NULL
+       2 ISCURRENT                      SMALLINT         NOT NULL
+       3 ISREADONLY                     SMALLINT         NOT NULL
+       4 ISENABLED                      SMALLINT         NOT NULL
+       5 PROPERTIES                     BLOB(sub 1)      NOT NULL
+
+    [FOLDER]
+       0 FOLDERID                       BIGINT/NUMERIC   NOT NULL
+       1 PARENTFOLDERID                 BIGINT/NUMERIC   
+       2 NAME                           VARCHAR(255)     NOT NULL
+       3 ISHIDDEN                       SMALLINT         NOT NULL
+
+    [GLOBALBINARY]
+       0 GLOBALBINARYID                 VARCHAR(64)      NOT NULL
+       1 DATA                           BLOB(sub 0)      NOT NULL
+
+    [GLOBALPROPERTY]
+       0 GLOBALPROPERTYID               VARCHAR(64)      NOT NULL
+       1 VALUE                          VARCHAR(255)     
+       2 VALUELONG                      BLOB(sub 1)      
+
+    [JOB]
+       0 JOBID                          BIGINT/NUMERIC   NOT NULL
+       1 USERID                         INTEGER          NOT NULL
+       2 NAME                           VARCHAR(255)     
+       3 ACTION                         BLOB(sub 1)      NOT NULL
+       4 CREATIONTIME                   TIMESTAMP        NOT NULL
+       5 LASTSTARTTIME                  TIMESTAMP        
+       6 LASTJOBRESULTID                BIGINT/NUMERIC   
+       7 SCHEDULE                       BLOB(sub 1)      NOT NULL
+
+    [JOBRESULT]
+       0 JOBRESULTID                    BIGINT/NUMERIC   NOT NULL
+       1 JOBID                          BIGINT/NUMERIC   NOT NULL
+       2 JOBACTION                      BLOB(sub 1)      NOT NULL
+       3 JOBNAME                        VARCHAR(255)     
+       4 JOBUSERID                      INTEGER          NOT NULL
+       5 RESULT                         INTEGER          NOT NULL
+       6 STARTTIME                      TIMESTAMP        NOT NULL
+       7 COMPLETETIME                   TIMESTAMP        
+       8 JOBRESULTOUTPUT                BLOB(sub 1)      NOT NULL
+       9 TERMINALOUTPUT                 BLOB(sub 1)      NOT NULL
+
+    [KNOWNKEYS]
+       0 KEYTYPE                        VARCHAR(64)      NOT NULL
+       1 KEYID                          VARCHAR(36)      NOT NULL
+
+    [PROFILE]
+       0 PROFILEID                      BIGINT/NUMERIC   NOT NULL
+       1 USERID                         INTEGER          NOT NULL
+       2 TYPE                           CHAR(1)          NOT NULL
+       3 CONNECTOR                      VARCHAR(16)      NOT NULL
+       4 NAME                           VARCHAR(255)     NOT NULL
+       5 PROPERTIES                     BLOB(sub 1)      NOT NULL
+       6 MOSTRECENTWORKERRESULTID       BIGINT/NUMERIC   
+       7 SERVERSIDEEXECUTION            BLOB(sub 1)      
+       8 VERSION                        BIGINT/NUMERIC   NOT NULL
+
+    [TAG]
+       0 TAGID                          INTEGER          NOT NULL
+       1 NAME                           VARCHAR(255)     NOT NULL
+
+    [USER]
+       0 USERID                         INTEGER          NOT NULL
+       1 USERNAME                       VARCHAR(255)     NOT NULL
+       2 PASSWORD                       VARCHAR(32)      NOT NULL
+       3 PASSWORDHASH                   CHAR(80)         NOT NULL
+       4 FULLNAME                       VARCHAR(255)     NOT NULL
+       5 ISADMIN                        SMALLINT         NOT NULL
+       6 RIGHTS                         INTEGER          NOT NULL
+       7 ISACTIVE                       SMALLINT         NOT NULL
+       8 AUTH                           SMALLINT         NOT NULL
+       9 DISTINGUISHEDNAME              VARCHAR(255)     
+      10 MFASTATUS                      SMALLINT         NOT NULL
+      11 MFASECRET                      CHAR(110)        
+      12 MFAINITIALIZATIONTIME          TIMESTAMP        
+      13 LOGINPRIVILEGES                INTEGER          
+
+    [USERDATA]
+       0 USERDATAID                     BIGINT/NUMERIC   NOT NULL
+       1 USERID                         INTEGER          NOT NULL
+       2 FOLDER                         VARCHAR(16)      NOT NULL
+       3 NAME                           VARCHAR(255)     NOT NULL
+       4 DATA                           BLOB(sub 1)      NOT NULL
+
+    [USERFOLDER]
+       0 USERFOLDERID                   BIGINT/NUMERIC   NOT NULL
+       1 USERID                         INTEGER          NOT NULL
+       2 FOLDER                         BLOB(sub 1)      NOT NULL
+       3 ACCESS                         SMALLINT         NOT NULL
+
+    [USERMAPPING]
+       0 USERMAPPINGID                  BIGINT/NUMERIC   NOT NULL
+       1 USERID                         INTEGER          NOT NULL
+       2 TYPE                           VARCHAR(16)      NOT NULL
+       3 OBJECT                         VARCHAR(255)     NOT NULL
+
+    [WORKERRESULT]
+       0 WORKERRESULTID                 BIGINT/NUMERIC   NOT NULL
+       1 USERID                         INTEGER          NOT NULL
+       2 PROFILEID                      BIGINT/NUMERIC   
+       3 TYPE                           CHAR(1)          NOT NULL
+       4 RESULT                         INTEGER          NOT NULL
+       5 STARTTIME                      TIMESTAMP        NOT NULL
+       6 COMPLETETIME                   TIMESTAMP        NOT NULL
+       7 MACHINENAME                    VARCHAR(255)     NOT NULL
+       8 ITEMSARCHIVED                  INTEGER          NOT NULL
+       9 REPORT                         BLOB(sub 0)      
+      10 TEMPNAME                       VARCHAR(255)     
+
+  ROW COUNTS:
+    CREDENTIAL                                 0
+    FILEGROUP                                  0
+    FOLDER                                     0
+    GLOBALBINARY                               0
+    GLOBALPROPERTY                             10
+    JOB                                        0
+    JOBRESULT                                  0
+    KNOWNKEYS                                  1
+    PROFILE                                    6
+    TAG                                        0
+    USER                                       1
+    USERDATA                                   0
+    USERFOLDER                                 1
+    USERMAPPING                                0
+    WORKERRESULT                               32
+
+======================================================================
+DATABASE: C:\Users\pcr20\AppData\Local\Temp\msfb2\MailStoreFileGroup.fdb
+  CONNECTED user='SYSDBA' pw='masterkey'
+  engine: 4.0.6
+
+  USER TABLES/VIEWS (7):
+    FOLDER                                     table
+    FOLDERCMB                                  table
+    GLOBALPROPERTY                             table
+    MAIL                                       table
+    MAILTAG                                    table
+    MIMEENTITY                                 table
+    SEARCHINDEX                                table
+
+  COLUMNS:
+
+    [FOLDER]
+       0 FOLDERID                       BIGINT/NUMERIC   NOT NULL
+       1 NAME                           BLOB(sub 1)      NOT NULL
+
+    [FOLDERCMB]
+       0 FOLDERCMBID                    BIGINT/NUMERIC   NOT NULL
+       1 FROMFOLDERID                   BIGINT/NUMERIC   NOT NULL
+       2 TOFOLDERID                     BIGINT/NUMERIC   NOT NULL
+       3 FOLDERCOUNT                    INTEGER          NOT NULL
+       4 FOLDERS                        BLOB(sub 0)      NOT NULL
+
+    [GLOBALPROPERTY]
+       0 GLOBALPROPERTYID               VARCHAR(64)      NOT NULL
+       1 VALUE                          VARCHAR(255)     NOT NULL
+
+    [MAIL]
+       0 MAILID                         BIGINT/NUMERIC   NOT NULL
+       1 FOLDERID                       BIGINT/NUMERIC   NOT NULL
+       2 MESSAGEID                      VARCHAR(200)     NOT NULL
+       3 HEADERHASH                     CHAR(40)         NOT NULL
+       4 DATE                           TIMESTAMP        NOT NULL
+       5 FLAGS                          INTEGER          NOT NULL
+       6 ARCDATE                        TIMESTAMP        NOT NULL
+       7 SIZE                           BIGINT/NUMERIC   NOT NULL
+       8 RRCONTAINER                    BIGINT/NUMERIC   
+       9 RRENTRY                        INTEGER          
+      10 DISPLAYSUBJECT                 VARCHAR(255)     
+      11 DISPLAYFROMORTO                VARCHAR(255)     
+
+    [MAILTAG]
+       0 MAILTAGID                      BIGINT/NUMERIC   NOT NULL
+       1 MAILID                         BIGINT/NUMERIC   NOT NULL
+       2 TAGID                          INTEGER          NOT NULL
+
+    [MIMEENTITY]
+       0 MIMEENTITYID                   BIGINT/NUMERIC   NOT NULL
+       1 MAILID                         BIGINT/NUMERIC   NOT NULL
+       2 PARENTMIMEENTITYID             BIGINT/NUMERIC   
+       3 POSITION                       INTEGER          NOT NULL
+       4 HEADERSTRING                   BLOB(sub 1)      
+       5 CONTENTCONTAINER               BIGINT/NUMERIC   
+       6 CONTENTENTRY                   INTEGER          
+       7 CONTENTISDECODED               SMALLINT         
+       8 CONTENTHASH                    CHAR(40)         
+       9 PLAINTEXTCONTAINER             BIGINT/NUMERIC   
+      10 PLAINTEXTENTRY                 INTEGER          
+      11 HEADERCONTAINER                BIGINT/NUMERIC   
+      12 HEADERENTRY                    INTEGER          
+      13 HEADERHASH                     CHAR(40)         
+
+    [SEARCHINDEX]
+       0 SEARCHINDEXID                  INTEGER          NOT NULL
+       1 NAME                           VARCHAR(255)     NOT NULL
+       2 VERSION                        SMALLINT         NOT NULL
+       3 NEEDSREBUILD                   SMALLINT         NOT NULL
+
+  ROW COUNTS:
+    FOLDER                                     238
+    FOLDERCMB                                  0
+    GLOBALPROPERTY                             7
+    MAIL                                       714245
+    MAILTAG                                    0

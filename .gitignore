@@ -1,0 +1,8 @@
+# never commit archive secrets or data
+*.key
+*.fdb
+*.dat
+*.rr
+pylib/
+pylib.zip
+__pycache__/

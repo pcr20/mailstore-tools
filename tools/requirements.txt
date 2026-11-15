@@ -1,0 +1,5 @@
+firebird-driver~=2.1
+firebird-base~=2.0
+python-dateutil~=2.8
+# protobuf only needed for some firebird-base features; not required for schema dump
+protobuf~=5.29
