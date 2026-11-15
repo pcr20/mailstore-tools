@@ -174,3 +174,5 @@ protects only the application's own open path, not the data at rest. Treat the
 | `docs/mailstore-format.md` | databases, key file, schema |
 | `docs/container-format.md` | container + entry format and cipher |
 | `docs/searching.md` | building and querying the index |
+
+> **Update:** Lup is in fact fully recoverable without the recovery passphrase. The DPAPI wall only blocks MailStore's *own* Firebird plugin; our reader derives the content key from the clear `masterkey`, so it decrypts Lup too (verified: Lup FileGroup opened on stock Linux Firebird, 24,243 messages). See `docs/linux-stock-firebird.md`.
