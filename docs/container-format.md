@@ -1,59 +1,75 @@
-# MailStore content container format (`Data\<n>.dat`)
+# MailStore content container format (`Data\<n>.dat`) — decoded
 
-Reverse-engineered **framing only** (file layout). The entry payloads are
-encrypted and are NOT decoded here — see "Payloads" below.
+Fully reverse-engineered from `MailStoreHome.exe` and verified end-to-end
+against a real archive with the owner's key. Reading is **in place and
+read-only** — nothing in the archive is modified.
 
 ## File layout
 
 ```
-offset 0   : "MailStoreContainer-v1:"            (22-byte ASCII magic)
-offset 22  : offset table — array of uint64 LE
-             table[i] = start of entry i within the data region
-             (table[0] = 0; monotonically increasing)
-data base  : 22 + 8 * len(table)
-entries    : data[ table[i] : table[i+1] ]       one blob per table slot
-footer     : trailing block beginning "MailStoreDataContainer..." (plaintext
-             metadata; sits after the last entry)
+offset 0  : "MailStoreContainer-v1:"            (22-byte magic)
+offset 22 : offset table, uint64-LE             table[i] = start of entry i in data region
+data base : 22 + 8*len(table)
+entries   : data[ table[i] : table[i+1] ]
+footer    : trailing "MailStoreDataContainer..." metadata block
 ```
 
-A `(container, entry)` pointer from `MIMEENTITY`/`MAIL` in the FileGroup DB
-selects file `Data\<container>.dat`, entry index `entry` → the byte range
-`data[table[entry] : table[entry+1]]`.
-
-Reference container `1.dat`: 1,022 entries, data base 8206, 1,452-byte footer.
+A `(container, entry)` pointer from the FileGroup DB selects `Data\<container>.dat`,
+entry `entry` = `data[table[entry] : table[entry+1]]`.
 
 ## Entry record
 
-Each entry blob is:
-
 ```
-8 bytes   per-entry prefix   (high-entropy; nonce / IV seed / auth tag)
-4 bytes   "MSE1"             (ASCII magic, MailStore Entry v1)
-8 bytes   payload length L   (uint64 LE)
-L bytes   payload            (AES ciphertext; L is always a multiple of 16)
+prefix(8)                 per-entry value (an entry hash; not needed to decode)
+"MSE1"(4)                 entry magic
+mse1len(8, uint64-LE)     length of the rest of the entry
+"MailStoreData"(13)       serialization-envelope magic
+version(1)                1..4  (observed: 4)
+encFlag(1)                1 = encrypted
+compFlag(1)               1 = gzip-compressed
+plainLen(8, uint64-LE)    decoded length  (present when version >= 3)
+IV(16)                    AES-CBC IV
+ciphertext(N*16)          AES-256-CBC
+trailer(8)                extra bytes after the ciphertext
 ```
 
-So an entry's on-disk size is `20 + L`, and every observed entry size ≡ 4 (mod 16).
+## Keys and cipher (recovered from MailStoreHome.exe)
 
-## Payloads — encrypted, not compressed
+Key file (`MailStoreMaster.key` / `MailStoreFileGroup.key`) — see
+`mailstore-format.md` for the JSON. The two relevant keys:
 
-Evidence that the `L`-byte payloads are AES-encrypted rather than compressed:
+- `masterkey`  (mode `Unprotected`) = 32-byte AES-256 key, in clear.
+- `encryptionkey` (mode `MasterKey`) = the content key, wrapped by `masterkey`.
 
-- `L` is **always a multiple of 16** (AES block size) across all 1,022 entries.
-- **Zero** entries carry a zlib (`78 9c/01/da`) or gzip (`1f 8b`) magic.
-- Data-region byte entropy is **7.99 / 8.0** (indistinguishable from random).
-- Even the tiny `rr.prop` properties file is full-entropy (the archive
-  encrypts auxiliary files too).
+`DecryptAES(key, blob)` (MailStoreHome.exe):
+```
+blob = salt(16) | iv(16) | AES-256-CBC-PKCS7( salt(16) | plaintext )
+aesKey = PBKDF2-HMAC-SHA1(key, salt, 1000) -> 32 bytes        # Rfc2898DeriveBytes
+decrypt, strip PKCS7, verify leading 16 bytes == salt, return the rest
+```
 
-The key is the FileGroup `encryptionkey` (AES-256, mode `MasterKey` — wrapped by
-the `Unprotected` `masterkey`; see `mailstore-format.md`). The 8-byte per-entry
-prefix is the per-entry IV/nonce. The exact cipher mode and IV derivation live in
-MailStore's application code and are **not** reproduced here.
+Content key:  `contentKey = DecryptAES(masterkey, encryptionkey)[:32]`.
+Verified two ways: the built-in salt-check passes, and the key file's
+`encryptionkey.checksum` decrypts (same scheme) to the ASCII test vector
+`0123456789abcdef0123456789abcdef`.
 
-## Getting decoded bodies
+Container entry decode (version 4):
+```
+AES-256-CBC( key = contentKey, iv = IV ) over the block-aligned ciphertext
+then, if compFlag: gzip-inflate
+then take plainLen bytes
+```
+Note the container cipher uses the content key **directly** (no per-entry
+PBKDF2) with a random 16-byte IV stored at the front of each value — fast
+enough for millions of entries. Header/plaintext/content parts are stored as
+separate entries; a full message is reassembled from its `MIMEENTITY` tree
+(root headers + boundary-delimited child parts).
 
-This framing locates every message part exactly, but readable text requires
-MailStore's content decryption. The supported route is **MailStore Home → Export
-→ EML** (MailStore decrypts on export; also the only route for the Lup archive,
-via its recovery passphrase). Reimplementing the content cipher from the key is
-out of scope here.
+## Tools
+
+- `tools/mailstore_lib.py` — key unwrap, container decode, message reassembly.
+- `tools/mailstore_read.py` — CLI: `search`, `eml <mailid>`, `text <mailid>`
+  against the SQLite index + the untouched `Data\` folder.
+
+Verified: reconstructed messages parse as valid RFC822/MIME (correct Subject,
+From, Date, multipart structure, and decoded bodies).
