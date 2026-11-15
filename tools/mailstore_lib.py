@@ -79,22 +79,41 @@ class Container:
     def __init__(self, path, content_key):
         self.key = content_key
         self.d = open(path, 'rb').read()
-        assert self.d[:22] == b'MailStoreContainer-v1:', "bad container magic"
-        off = []; p = 22; prev = -1
-        while p + 8 <= len(self.d):
-            v = struct.unpack_from('<Q', self.d, p)[0]
-            if v < prev or v > len(self.d): break
-            off.append(v); prev = v; p += 8
-        self.off = off
-        self.base = 22 + 8*len(off)
+        d = self.d
+        assert d[:22] == b'MailStoreContainer-v1:', "bad container magic"
+        # The table is C uint64-LE offsets (table[0]=0). Its length is found by
+        # anchoring on the fact that every entry begins with 8 bytes + "MSE1":
+        # base = 22 + 8*C, and both entry 0 (at base) and entry 1 (at base+table[1])
+        # must have "MSE1" at offset +8.
+        t1 = struct.unpack_from('<Q', d, 30)[0]  # table[1], fixed regardless of C
+        C = None
+        maxC = (len(d) - 22)//8
+        for c in range(1, maxC):
+            base = 22 + 8*c
+            if base + 12 > len(d): break
+            if d[base+8:base+12] != b'MSE1': continue
+            e1 = base + t1
+            if e1 + 12 <= len(d) and d[e1+8:e1+12] == b'MSE1':
+                C = c; break
+        if C is None:  # fallback: monotonic scan
+            off=[]; p=22; prev=-1
+            while p+8<=len(d):
+                v=struct.unpack_from('<Q',d,p)[0]
+                if v<prev or v>len(d): break
+                off.append(v); prev=v; p+=8
+            self.off=off; self.base=22+8*len(off); return
+        self.base = 22 + 8*C
+        self.off = [struct.unpack_from('<Q', d, 22+8*i)[0] for i in range(C)]
 
     def entry_count(self): return len(self.off) - 1
 
     def decode(self, idx):
         e = self.d[self.base + self.off[idx]: self.base + self.off[idx+1]]
-        j = e.find(b'MailStoreData')
-        if j < 0: raise ValueError("no MailStoreData header")
-        p = j + 13
+        if e[8:12] != b'MSE1':
+            return b''
+        p = e.find(b'MailStoreData')
+        if p < 0: return b''
+        p += 13
         ver, enc, comp = e[p], e[p+1], e[p+2]; p += 3
         ln = -1
         if ver >= 3:
