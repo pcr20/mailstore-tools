@@ -14,15 +14,55 @@ Scheme (recovered from MailStoreHome.exe):
     decode: AES-256-CBC(contentKey, IV) over block-aligned ciphertext,
             then gzip-inflate if compFlag, take plainLen bytes.
 """
-import json, base64, hashlib, struct, zlib, os
-from Crypto.Cipher import AES
+import json, base64, hashlib, struct, zlib, os, sys
+
+# AES-256-CBC decrypt with no padding. Prefer pycryptodome; otherwise use the
+# OS-native provider (Windows CNG via ctypes) so no binary wheel is needed.
+def _aes_cbc_decrypt(key, iv, ct):
+    try:
+        from Crypto.Cipher import AES
+        return AES.new(key, AES.MODE_CBC, iv).decrypt(ct)
+    except ImportError:
+        pass
+    if sys.platform == "win32":
+        return _aes_cbc_decrypt_cng(key, iv, ct)
+    raise RuntimeError("no AES backend: install pycryptodome")
+
+def _aes_cbc_decrypt_cng(key, iv, ct):
+    import ctypes
+    from ctypes import wintypes
+    bcrypt = ctypes.WinDLL("bcrypt.dll")
+    alg = ctypes.c_void_p()
+    if bcrypt.BCryptOpenAlgorithmProvider(ctypes.byref(alg),
+            ctypes.c_wchar_p("AES"), None, 0): raise OSError("open alg")
+    try:
+        mode = ctypes.create_unicode_buffer("ChainingModeCBC")
+        bcrypt.BCryptSetProperty(alg, ctypes.c_wchar_p("ChainingMode"),
+            ctypes.cast(mode, ctypes.POINTER(ctypes.c_ubyte)),
+            (len(mode.value)+1)*2, 0)
+        hkey = ctypes.c_void_p()
+        kb = (ctypes.c_ubyte*len(key)).from_buffer_copy(key)
+        if bcrypt.BCryptGenerateSymmetricKey(alg, ctypes.byref(hkey), None, 0,
+                kb, len(key), 0): raise OSError("genkey")
+        try:
+            ivb = (ctypes.c_ubyte*len(iv)).from_buffer_copy(iv)
+            inb = (ctypes.c_ubyte*len(ct)).from_buffer_copy(ct)
+            out = (ctypes.c_ubyte*len(ct))()
+            res = wintypes.ULONG(0)
+            if bcrypt.BCryptDecrypt(hkey, inb, len(ct), None, ivb, len(iv),
+                    out, len(ct), ctypes.byref(res), 0): raise OSError("decrypt")
+            return bytes(out[:res.value])
+        finally:
+            bcrypt.BCryptDestroyKey(hkey)
+    finally:
+        bcrypt.BCryptCloseAlgorithmProvider(alg, 0)
 
 def _b64(s): return base64.b64decode(s)
 
 def _decrypt_aes(key, blob):
     salt, iv, ct = blob[:16], blob[16:32], blob[32:]
     dk = hashlib.pbkdf2_hmac('sha1', key, salt, 1000, 32)
-    pt = AES.new(dk, AES.MODE_CBC, iv).decrypt(ct)
+    pt = _aes_cbc_decrypt(dk, iv, ct)
     if pt and 1 <= pt[-1] <= 16 and pt[-pt[-1]:] == bytes([pt[-1]])*pt[-1]:
         pt = pt[:-pt[-1]]
     if pt[:16] != salt:
@@ -64,7 +104,7 @@ class Container:
         if enc:
             iv, body = data[:16], data[16:]
             ctlen = (len(body)//16)*16
-            out = AES.new(self.key, AES.MODE_CBC, iv).decrypt(body[:ctlen])
+            out = _aes_cbc_decrypt(self.key, iv, body[:ctlen])
         if comp:
             do = zlib.decompressobj(16 + zlib.MAX_WBITS)
             out = do.decompress(out) + do.flush()
